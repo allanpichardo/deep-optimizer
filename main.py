@@ -70,7 +70,7 @@ if __name__ == '__main__':
     model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=args.lr, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
     model.fit(dataset, epochs=args.epochs, verbose=1)
 
-    pred = Portfolio(tickers=tickers, start_date='2020-07-01', end_date='2021-07-01').create_dataset(skip_y=True).batch(1)
+    pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True).batch(1)
     port_pred = model.predict(pred.take(1), verbose=1)
     print("Allocations:\n{}".format(tickers))
     print(np.around(port_pred[0], decimals=2))
