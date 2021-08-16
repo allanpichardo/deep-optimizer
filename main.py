@@ -2,6 +2,7 @@ import tensorflow as tf
 from deepoptimizer.tools.portfolio import Portfolio
 from deepoptimizer.losses import sharpe_ratio_loss, volatility_loss, portfolio_return_loss
 import numpy as np
+import argparse
 
 
 def sharpe(p, w):
@@ -9,6 +10,12 @@ def sharpe(p, w):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Optimize Portfolio.')
+    parser.add_argument('epochs', metavar='N', type=int, nargs='+',
+                        help='Number of epochs of training', default=100)
+
+    args = parser.parse_args()
+
     tf.random.set_seed(5)
 
     tickers = ["FBALX", "FBSOX"]
@@ -58,7 +65,7 @@ if __name__ == '__main__':
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.00001, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
-    model.fit(dataset, epochs=20, verbose=1)
+    model.fit(dataset, epochs=args.epochs, verbose=1)
 
     pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True).batch(1)
     port_pred = model.predict(pred.take(1), verbose=1)
