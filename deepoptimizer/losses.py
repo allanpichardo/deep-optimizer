@@ -15,10 +15,10 @@ def portfolio_return_loss(Y_actual, Y_pred):
 
     alloced = tf.multiply(Y_actual, tf.expand_dims(Y_pred, axis=1))
     pos_vals = tf.multiply(start_value, alloced)
-    portfolio_values = tf.reduce_sum(pos_vals, axis=2)
+    portfolio_values = tf.reduce_sum(pos_vals, axis=-1)
 
-    end_val = portfolio_values[:, -1:]
-    start_val = portfolio_values[:, 0:1]
+    end_val = tf.squeeze(portfolio_values[:, -1:])
+    start_val = tf.squeeze(portfolio_values[:, 0:1])
 
     ret = (end_val - start_val) / start_val
 
@@ -32,13 +32,13 @@ def volatility_loss(Y_actual, Y_pred):
 
     alloced = tf.multiply(Y_actual, tf.expand_dims(Y_pred, axis=1))
     pos_vals = tf.multiply(start_value, alloced)
-    portfolio_values = tf.reduce_sum(pos_vals, axis=2)
+    portfolio_values = tf.reduce_sum(pos_vals, axis=-1)
 
     port_rets = __daily_returns(portfolio_values)
 
-    std_return = tf.math.reduce_std(port_rets, axis=1, keepdims=True)
+    std_return = tf.math.reduce_std(port_rets, axis=-1, keepdims=False)
 
-    return tf.math.scalar_mul(tf.sqrt(252.), std_return)
+    return std_return
 
 # @tf.function
 def sharpe_ratio_loss(Y_actual, Y_pred):
@@ -59,20 +59,20 @@ def sharpe_ratio_loss(Y_actual, Y_pred):
     pos_vals = tf.multiply(start_value, alloced)
     portfolio_values = tf.reduce_sum(pos_vals, axis=2)
 
-    end_val = portfolio_values[:, -1:]
-    start_val = portfolio_values[:, 0:1]
+    end_val = tf.squeeze(portfolio_values[:, -1:])
+    start_val = tf.squeeze(portfolio_values[:, 0:1])
 
     ret = (end_val - start_val) / start_val
 
     port_rets = __daily_returns(portfolio_values)
 
-    mean_return = tf.reduce_mean(port_rets, axis=1, keepdims=True) - daily_rfr
-    std_return = tf.math.reduce_std(port_rets, axis=1, keepdims=True)
+    mean_return = tf.reduce_sum(port_rets, axis=-1, keepdims=False)
+    std_return = tf.math.reduce_std(port_rets, axis=-1, keepdims=False)
     # print(std_return)
 
-    sharpe = (mean_return - risk_free_rate) / std_return
+    sharpe = (ret) / std_return
 
-    sharpe = frequency * sharpe
+    # sharpe = frequency * sharpe
 
     return tf.math.negative(sharpe)
 
@@ -87,14 +87,14 @@ if __name__ == '__main__':
         [1.3, 1.2, 2.0],
     ],[
         [1.0, 1.0, 1.0],
-        [3.01, 1.5, 1.3],
+        [3.01, -1.5, 1.3],
         [1.02, 1.0, 1.5],
-        [0.02, 0.8, 1.0],
-        [5.01, 0.5, 1.7],
-        [0.001, 0.2, 2.0],
+        [0.02, -0.8, 1.0],
+        [2.01, 0.5, 1.7],
+        [0.001, -0.2, 2.0],
     ]])
 
     allocations = tf.constant([[0.5, 0.1, 0.4], [0.9, 0.1, 0]])
 
-    sharpe = portfolio_return_loss(prices, allocations)
+    sharpe = volatility_loss(prices, allocations)
     print(sharpe)

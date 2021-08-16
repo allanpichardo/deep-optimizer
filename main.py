@@ -25,10 +25,10 @@ if __name__ == '__main__':
 
     input_prices = tf.keras.layers.Input((252, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((252, 3), name="indicators_input")
-    p = tf.keras.layers.LSTM(126, activation='tanh', return_sequences=True)(input_prices)
+    p = tf.keras.layers.LSTM(12, activation='tanh', return_sequences=True)(input_prices)
     p = tf.keras.layers.BatchNormalization()(p)
     # p = tf.keras.layers.AveragePooling1D()(p)
-    p = tf.keras.layers.LSTM(126, activation='tanh')(p)
+    p = tf.keras.layers.LSTM(12, activation='tanh')(p)
     p = tf.keras.layers.BatchNormalization()(p)
     # p = tf.keras.layers.AveragePooling1D()(p)
     # p = tf.keras.layers.Conv1D(8, 3, activation='relu')(p)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, returns, volatility])
 
     model.summary()
-    model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.00001, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
+    model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.000001, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
     model.fit(dataset, epochs=args.epochs, verbose=1)
 
     pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True).batch(1)
