@@ -56,10 +56,13 @@ if __name__ == '__main__':
     i = tf.keras.layers.GlobalMaxPool1D()(i)
 
     x = tf.keras.layers.Concatenate()([p, i])
-    x = tf.keras.layers.Dense(16, activation='tanh')(x)
-    allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
-    returns = tf.keras.layers.Dense(1, activation='linear', name="returns")(x)
-    volatility = tf.keras.layers.Dense(1, activation='linear', name="volatility")(x)
+    a = tf.keras.layers.Dense(16, activation='tanh')(x)
+    r = tf.keras.layers.Dense(16, activation='tanh')(x)
+    v = tf.keras.layers.Dense(16, activation='tanh')(x)
+
+    allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(a)
+    returns = tf.keras.layers.Dense(1, activation='linear', name="returns")(r)
+    volatility = tf.keras.layers.Dense(1, activation='linear', name="volatility")(v)
 
     model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, returns, volatility])
 
