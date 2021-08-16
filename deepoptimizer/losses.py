@@ -9,7 +9,7 @@ def __daily_returns(prices):
         1.0
     )
 
-@tf.function
+# @tf.function
 def portfolio_return_loss(Y_actual, Y_pred):
     start_value = tf.constant(1000.0)
 
@@ -22,11 +22,11 @@ def portfolio_return_loss(Y_actual, Y_pred):
 
     ret = (end_val - start_val) / start_val
 
-    return -ret
+    return tf.math.negative(ret)
 
 
 
-@tf.function
+# @tf.function
 def volatility_loss(Y_actual, Y_pred):
     start_value = tf.constant(1000.0)
 
@@ -40,7 +40,7 @@ def volatility_loss(Y_actual, Y_pred):
 
     return tf.math.scalar_mul(tf.sqrt(252.), std_return)
 
-@tf.function
+# @tf.function
 def sharpe_ratio_loss(Y_actual, Y_pred):
     """
     Calculates a sharpe ratio for the portfolio
@@ -74,7 +74,7 @@ def sharpe_ratio_loss(Y_actual, Y_pred):
 
     sharpe = frequency * sharpe
 
-    return -sharpe
+    return tf.math.negative(sharpe)
 
 
 if __name__ == '__main__':
@@ -96,5 +96,5 @@ if __name__ == '__main__':
 
     allocations = tf.constant([[0.5, 0.1, 0.4], [0.9, 0.1, 0]])
 
-    sharpe = sharpe_ratio_loss(prices, allocations)
+    sharpe = portfolio_return_loss(prices, allocations)
     print(sharpe)
