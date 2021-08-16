@@ -12,6 +12,7 @@ def sharpe(p, w):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Optimize Portfolio.')
     parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--lr', type=float, default=0.001)
 
     args = parser.parse_args()
 
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, returns, volatility])
 
     model.summary()
-    model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.000001, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
+    model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=args.lr, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
     model.fit(dataset, epochs=args.epochs, verbose=1)
 
     pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True).batch(1)
