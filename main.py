@@ -56,6 +56,8 @@ if __name__ == '__main__':
     i = tf.keras.layers.GlobalMaxPool1D()(i)
 
     x = tf.keras.layers.Concatenate()([p, i])
+    x = tf.keras.layers.Dense(16, activation='tanh')(x)
+
     a = tf.keras.layers.Dense(16, activation='tanh')(x)
     r = tf.keras.layers.Dense(16, activation='tanh')(x)
     v = tf.keras.layers.Dense(16, activation='tanh')(x)
