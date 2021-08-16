@@ -18,18 +18,18 @@ if __name__ == '__main__':
 
     tf.random.set_seed(5)
 
-    tickers = ["FBALX", "FBSOX"]
-    number_of_assets = 2
+    tickers = ["FBALX", "FBSOX", "FAGIX"]
+    number_of_assets = 3
 
-    portfolio = Portfolio(tickers=tickers, start_date='2010-01-01', end_date='2020-01-01')
+    portfolio = Portfolio(tickers=tickers, start_date='2000-01-01', end_date='2020-01-01')
     dataset = portfolio.create_dataset(step=1).shuffle(50000).batch(32).cache().prefetch(tf.data.experimental.AUTOTUNE)
 
     input_prices = tf.keras.layers.Input((252, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((252, 3), name="indicators_input")
-    p = tf.keras.layers.LSTM(12, activation='tanh', return_sequences=True)(input_prices)
+    p = tf.keras.layers.LSTM(126, activation='tanh', return_sequences=True)(input_prices)
     p = tf.keras.layers.BatchNormalization()(p)
     # p = tf.keras.layers.AveragePooling1D()(p)
-    p = tf.keras.layers.LSTM(12, activation='tanh')(p)
+    p = tf.keras.layers.LSTM(126, activation='tanh')(p)
     p = tf.keras.layers.BatchNormalization()(p)
     # p = tf.keras.layers.AveragePooling1D()(p)
     # p = tf.keras.layers.Conv1D(8, 3, activation='relu')(p)
