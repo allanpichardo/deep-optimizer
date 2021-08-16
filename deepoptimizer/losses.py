@@ -38,7 +38,7 @@ def volatility_loss(Y_actual, Y_pred):
 
     std_return = tf.math.reduce_std(port_rets, axis=-1, keepdims=False)
 
-    return std_return
+    return tf.math.abs(std_return)
 
 # @tf.function
 def sharpe_ratio_loss(Y_actual, Y_pred):
