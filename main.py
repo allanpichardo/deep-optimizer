@@ -49,7 +49,7 @@ if __name__ == '__main__':
     i = tf.keras.layers.GlobalMaxPool1D()(i)
 
     x = tf.keras.layers.Concatenate()([p, i])
-    x = tf.keras.layers.Dense(8, activation='relu')(x)
+    x = tf.keras.layers.Dense(64, activation='tanh')(x)
     allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
     returns = tf.keras.layers.Dense(1, activation='linear', name="returns")(x)
     volatility = tf.keras.layers.Dense(1, activation='linear', name="volatility")(x)
@@ -57,9 +57,9 @@ if __name__ == '__main__':
     model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, returns, volatility])
 
     model.summary()
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.00001, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
+    model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.00001, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
     model.fit(dataset, epochs=20, verbose=1)
 
-    pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True, size=5, step=5).batch(1)
+    pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True).batch(1)
     port_pred = model.predict(pred.take(1), verbose=1)
     print(np.around(port_pred[0], decimals=2))
