@@ -11,8 +11,7 @@ def sharpe(p, w):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Optimize Portfolio.')
-    parser.add_argument('epochs', metavar='N', type=int, nargs='+',
-                        help='Number of epochs of training', default=100)
+    parser.add_argument('--epochs', type=int, default=100)
 
     args = parser.parse_args()
 
