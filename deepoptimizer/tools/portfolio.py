@@ -1,7 +1,7 @@
 import math
 
 from deepoptimizer.tools.stock_utils import get_combined_data, get_daily_returns, normalize_to_one, get_bond_yields, get_cpi, \
-    std_normalize
+    std_normalize, min_max_normalize
 import pandas as pd
 import tensorflow as tf
 
@@ -122,7 +122,7 @@ class Portfolio:
         indicator_collection = []
         k = 0
         while k * step + size < n_examples_indic:
-            indicator_collection += [std_normalize(self.economic_data.iloc[k * step:k * step + size]).values]
+            indicator_collection += [min_max_normalize(self.economic_data.iloc[k * step:k * step + size]).values]
             k += 1
 
         if skip_y:
