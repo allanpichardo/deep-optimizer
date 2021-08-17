@@ -16,6 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_start_date', default='2014-01-01')
     parser.add_argument('--train_end_date', default='2020-01-01')
     parser.add_argument('--tickers', nargs="+", default=["FBALX", "FBSOX", "FAGIX", "FIPDX"])
+    parser.add_argument('--loss_weights', nargs='+', default=[0.6, 0.1, 0.3])
 
 
     args = parser.parse_args()
@@ -73,7 +74,12 @@ if __name__ == '__main__':
     model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, returns, volatility])
 
     model.summary()
-    model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=args.lr, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
+    model.compile(
+        optimizer=tf.keras.optimizers.SGD(learning_rate=args.lr, clipnorm=1.0),
+        loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss],
+        metrics=[],
+        loss_weights=args.loss_weights
+    )
 
     print("----Training Start----")
     print("Tickers:\n{}".format(tickers))
