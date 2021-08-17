@@ -1,6 +1,6 @@
 import tensorflow as tf
 from deepoptimizer.tools.portfolio import Portfolio
-from deepoptimizer.losses import sharpe_ratio_loss, volatility_loss, portfolio_return_loss, sortino_ratio_loss
+from deepoptimizer.losses import sharpe_ratio_loss, volatility_loss, portfolio_return_loss, sortino_ratio_loss, __downside_risk
 import numpy as np
 import argparse
 
@@ -17,7 +17,6 @@ if __name__ == '__main__':
     parser.add_argument('--train_start_date', default='2014-01-01')
     parser.add_argument('--train_end_date', default='2020-01-01')
     parser.add_argument('--tickers', nargs="+", default=["FBALX", "FBSOX", "FAGIX", "FIPDX"])
-    parser.add_argument('--loss_weights', nargs='+', default=[0.6, 0.1, 0.3], type=float)
     parser.add_argument('--window_size', type=int, default=252)
 
     args = parser.parse_args()
@@ -26,40 +25,36 @@ if __name__ == '__main__':
 
     tickers = args.tickers.copy()
     number_of_assets = len(tickers)
-    window_size = 126
+    window_size = args.window_size
 
     portfolio = Portfolio(tickers=tickers, start_date=args.train_start_date, end_date=args.train_end_date)
     dataset = portfolio.create_dataset(step=1, size=window_size).shuffle(50000).batch(32).cache().prefetch(tf.data.experimental.AUTOTUNE)
 
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((window_size, 4), name="indicators_input")
-    p = tf.keras.layers.Conv1D(8, 3, activation='tanh')(input_prices)
-    p = tf.keras.layers.Conv1D(8, 3, activation='tanh')(p)
-    p = tf.keras.layers.Conv1D(1, 1, activation='tanh')(p)
+    p = tf.keras.layers.Conv1D(32, 3, activation='tanh')(input_prices)
+    # p = tf.keras.layers.Conv1D(32, 3, activation='tanh')(p)
     p = tf.keras.layers.BatchNormalization()(p)
-    p = tf.keras.layers.Flatten()(p)
 
-    i = tf.keras.layers.Conv1D(8, 3, activation='tanh')(input_indicators)
-    i = tf.keras.layers.Conv1D(8, 3, activation='tanh')(i)
-    i = tf.keras.layers.Conv1D(1, 1, activation='tanh')(i)
+    i = tf.keras.layers.Conv1D(32, 3, activation='tanh')(input_indicators)
+    # i = tf.keras.layers.Conv1D(32, 3, activation='tanh')(i)
     i = tf.keras.layers.BatchNormalization()(i)
-    i = tf.keras.layers.Flatten()(i)
 
     x = tf.keras.layers.Concatenate()([p, i])
+    x = tf.keras.layers.Conv1D(32, 3, activation='tanh')(x)
+    x = tf.keras.layers.Conv1D(1, 1, activation='tanh')(x)
+    x = tf.keras.layers.Flatten()(x)
+
     allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
+    # volatility = tf.keras.layers.Dense(1, activation='linear', name='volatility')(x)
 
-    x = tf.keras.layers.Concatenate()([allocations, p])
-    # returns = tf.keras.layers.Dense(1, activation='linear', name='returns')(x)
-    volatility = tf.keras.layers.Dense(1, activation='linear', name='volatility')(x)
-
-    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, volatility])
+    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations])
 
     model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr, clipnorm=1.0),
         loss=[sortino_ratio_loss, portfolio_return_loss, volatility_loss],
-        metrics=[],
-        loss_weights=args.loss_weights
+        metrics=[]
     )
 
     print("----Training Start----")
@@ -75,5 +70,5 @@ if __name__ == '__main__':
     print(np.around(port_pred[0], decimals=2))
     # print("Returns:")
     # print(np.around(port_pred[1], decimals=2))
-    print("Stdev:")
-    print(np.around(port_pred[1], decimals=2))
+    # print("Stdev:")
+    # print(np.around(port_pred[1], decimals=2))
