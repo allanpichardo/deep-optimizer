@@ -1,6 +1,6 @@
 import tensorflow as tf
 from deepoptimizer.tools.portfolio import Portfolio
-from deepoptimizer.losses import sharpe_ratio_loss, volatility_loss, portfolio_return_loss
+from deepoptimizer.losses import sharpe_ratio_loss, volatility_loss, portfolio_return_loss, sortino_ratio_loss
 import numpy as np
 import argparse
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     tf.random.set_seed(5)
 
-    tickers = args.tickers
+    tickers = args.tickers.copy()
     number_of_assets = len(tickers)
 
     portfolio = Portfolio(tickers=tickers, start_date=args.train_start_date, end_date=args.train_end_date)
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.SGD(learning_rate=args.lr, clipnorm=1.0),
-        loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss],
+        loss=[sortino_ratio_loss, portfolio_return_loss, volatility_loss],
         metrics=[],
         loss_weights=args.loss_weights
     )
