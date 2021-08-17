@@ -49,10 +49,10 @@ if __name__ == '__main__':
     allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
 
     x = tf.keras.layers.Concatenate()([allocations, p])
-    returns = tf.keras.layers.Dense(1, activation='linear', name='returns')(x)
+    # returns = tf.keras.layers.Dense(1, activation='linear', name='returns')(x)
     volatility = tf.keras.layers.Dense(1, activation='linear', name='volatility')(x)
 
-    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, returns, volatility])
+    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, volatility])
 
     model.summary()
     model.compile(
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     port_pred = model.predict(pred.take(1), verbose=1)
     print("Allocations:\n{}".format(args.tickers))
     print(np.around(port_pred[0], decimals=2))
-    print("Returns:")
-    print(np.around(port_pred[1], decimals=2))
+    # print("Returns:")
+    # print(np.around(port_pred[1], decimals=2))
     print("Stdev:")
-    print(np.around(port_pred[2], decimals=2))
+    print(np.around(port_pred[1], decimals=2))
