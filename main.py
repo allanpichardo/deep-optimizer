@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_start_date', default='2014-01-01')
     parser.add_argument('--train_end_date', default='2020-01-01')
     parser.add_argument('--tickers', nargs="+", default=["FBALX", "FBSOX", "FAGIX", "FIPDX"])
-    parser.add_argument('--loss_weights', nargs='+', default=[0.6, 0.1, 0.3])
+    parser.add_argument('--loss_weights', nargs='+', default=[0.6, 0.1, 0.3], type=float)
 
 
     args = parser.parse_args()
