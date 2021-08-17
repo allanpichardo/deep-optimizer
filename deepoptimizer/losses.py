@@ -66,13 +66,13 @@ def sharpe_ratio_loss(Y_actual, Y_pred):
 
     port_rets = __daily_returns(portfolio_values)
 
-    mean_return = tf.reduce_sum(port_rets, axis=-1, keepdims=False)
+    mean_return = tf.math.reduce_mean(port_rets, axis=-1, keepdims=False)
     std_return = tf.math.reduce_std(port_rets, axis=-1, keepdims=False)
     # print(std_return)
 
-    sharpe = (ret) / std_return
+    sharpe = (mean_return - risk_free_rate) / std_return
 
-    # sharpe = frequency * sharpe
+    sharpe = tf.sqrt(252.0) * sharpe
 
     return tf.math.negative(sharpe)
 

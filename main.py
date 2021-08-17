@@ -82,14 +82,14 @@ if __name__ == '__main__':
     )
 
     print("----Training Start----")
-    print("Tickers:\n{}".format(tickers))
+    print("Tickers:\n{}".format(args.tickers))
     print("--------")
     model.fit(dataset, epochs=args.epochs, verbose=1)
 
     print("----Optimization Start----")
     pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True).batch(1)
     port_pred = model.predict(pred.take(1), verbose=1)
-    print("Allocations:\n{}".format(tickers))
+    print("Allocations:\n{}".format(args.tickers))
     print(np.around(port_pred[0], decimals=2))
     print("Returns:")
     print(np.around(port_pred[1], decimals=2))
