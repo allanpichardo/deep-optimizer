@@ -18,6 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_end_date', default='2020-01-01')
     parser.add_argument('--tickers', nargs="+", default=["FBALX", "FBSOX", "FAGIX", "FIPDX"])
     parser.add_argument('--loss_weights', nargs='+', default=[0.6, 0.1, 0.3], type=float)
+    parser.add_argument('--window_size', type=int, default=252)
 
     args = parser.parse_args()
 
@@ -25,15 +26,18 @@ if __name__ == '__main__':
 
     tickers = args.tickers.copy()
     number_of_assets = len(tickers)
+    window_size = 126
 
     portfolio = Portfolio(tickers=tickers, start_date=args.train_start_date, end_date=args.train_end_date)
-    dataset = portfolio.create_dataset(step=1).shuffle(50000).batch(32).cache().prefetch(tf.data.experimental.AUTOTUNE)
+    dataset = portfolio.create_dataset(step=1, size=window_size).shuffle(50000).batch(32).cache().prefetch(tf.data.experimental.AUTOTUNE)
 
-    input_prices = tf.keras.layers.Input((252, number_of_assets), name="price_input")
-    input_indicators = tf.keras.layers.Input((252, 4), name="indicators_input")
-    p = tf.keras.layers.LSTM(8, activation='tanh', return_sequences=True)(input_prices)
-    p = tf.keras.layers.LSTM(8, activation='tanh', return_sequences=False)(p)
+    input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
+    input_indicators = tf.keras.layers.Input((window_size, 4), name="indicators_input")
+    p = tf.keras.layers.Conv1D(8, 3, activation='tanh')(input_prices)
+    p = tf.keras.layers.Conv1D(8, 3, activation='tanh')(p)
+    p = tf.keras.layers.Conv1D(1, 1, activation='tanh')(p)
     p = tf.keras.layers.BatchNormalization()(p)
+    p = tf.keras.layers.Flatten()(p)
 
     i = tf.keras.layers.Conv1D(8, 3, activation='tanh')(input_indicators)
     i = tf.keras.layers.Conv1D(8, 3, activation='tanh')(i)
@@ -64,7 +68,7 @@ if __name__ == '__main__':
     model.fit(dataset, epochs=args.epochs, verbose=1)
 
     print("----Optimization Start----")
-    pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True).batch(
+    pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True, step=window_size, size=window_size).batch(
         1)
     port_pred = model.predict(pred.take(1), verbose=1)
     print("Allocations:\n{}".format(args.tickers))
