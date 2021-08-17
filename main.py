@@ -13,6 +13,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Optimize Portfolio.')
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--train_start_date', default='2014-01-01')
     parser.add_argument('--train_end_date', default='2020-01-01')
     parser.add_argument('--tickers', nargs="+", default=["FBALX", "FBSOX", "FAGIX", "FIPDX"])
