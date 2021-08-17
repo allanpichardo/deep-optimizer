@@ -13,19 +13,23 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Optimize Portfolio.')
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--train_start_date', default='2014-01-01')
+    parser.add_argument('--train_end_date', default='2020-01-01')
+    parser.add_argument('--tickers', nargs="+", default=["FBALX", "FBSOX", "FAGIX", "FIPDX"])
+
 
     args = parser.parse_args()
 
     tf.random.set_seed(5)
 
-    tickers = ["FBALX", "FBSOX", "FAGIX"]
-    number_of_assets = 3
+    tickers = args.tickers
+    number_of_assets = len(tickers)
 
-    portfolio = Portfolio(tickers=tickers, start_date='2000-01-01', end_date='2020-01-01')
+    portfolio = Portfolio(tickers=tickers, start_date=args.train_start_date, end_date=args.train_end_date)
     dataset = portfolio.create_dataset(step=1).shuffle(50000).batch(32).cache().prefetch(tf.data.experimental.AUTOTUNE)
 
     input_prices = tf.keras.layers.Input((252, number_of_assets), name="price_input")
-    input_indicators = tf.keras.layers.Input((252, 3), name="indicators_input")
+    input_indicators = tf.keras.layers.Input((252, 4), name="indicators_input")
     p = tf.keras.layers.LSTM(8, activation='tanh', return_sequences=True)(input_prices)
     p = tf.keras.layers.BatchNormalization()(p)
     # p = tf.keras.layers.AveragePooling1D()(p)
@@ -70,8 +74,13 @@ if __name__ == '__main__':
 
     model.summary()
     model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=args.lr, clipnorm=1.0), loss=[sharpe_ratio_loss, portfolio_return_loss, volatility_loss], metrics=[])
+
+    print("----Training Start----")
+    print("Tickers:\n{}".format(tickers))
+    print("--------")
     model.fit(dataset, epochs=args.epochs, verbose=1)
 
+    print("----Optimization Start----")
     pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True).batch(1)
     port_pred = model.predict(pred.take(1), verbose=1)
     print("Allocations:\n{}".format(tickers))

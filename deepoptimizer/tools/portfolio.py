@@ -74,7 +74,7 @@ class Portfolio:
         dfb = dfb.join(cpi, how='left')
         dfb = dfb.join(self.spy)
         dfb = dfb.dropna(subset=['SPY'])
-        dfb.drop(columns=['SPY'], inplace=True)
+        # dfb.drop(columns=['SPY'], inplace=True)
 
         dfb.fillna(method='ffill', inplace=True)
         dfb.fillna(method='bfill', inplace=True)
