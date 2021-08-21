@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--train_start_date', default='2014-01-01')
     parser.add_argument('--train_end_date', default='2020-01-01')
-    parser.add_argument('--tickers', nargs="+", default=["FBALX", "FBSOX", "FAGIX", "FIPDX"])
+    parser.add_argument('--tickers', nargs="+", default=["FIPDX", "FOCPX", "FBGRX"])
     parser.add_argument('--window_size', type=int, default=252)
 
     args = parser.parse_args()
@@ -32,18 +32,14 @@ if __name__ == '__main__':
 
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((window_size, 4), name="indicators_input")
-    p = tf.keras.layers.Conv1D(32, 3, activation='tanh')(input_prices)
-    # p = tf.keras.layers.Conv1D(32, 3, activation='tanh')(p)
+    p = tf.keras.layers.LSTM(64, activation='elu')(input_prices)
     p = tf.keras.layers.BatchNormalization()(p)
 
-    i = tf.keras.layers.Conv1D(32, 3, activation='tanh')(input_indicators)
-    # i = tf.keras.layers.Conv1D(32, 3, activation='tanh')(i)
+    i = tf.keras.layers.LSTM(64, activation='elu')(input_indicators)
     i = tf.keras.layers.BatchNormalization()(i)
 
     x = tf.keras.layers.Concatenate()([p, i])
-    x = tf.keras.layers.Conv1D(32, 3, activation='tanh')(x)
-    x = tf.keras.layers.Conv1D(1, 1, activation='tanh')(x)
-    x = tf.keras.layers.Flatten()(x)
+    x = tf.keras.layers.Dense(64, activation='elu')(x)
 
     allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
     # volatility = tf.keras.layers.Dense(1, activation='linear', name='volatility')(x)
@@ -53,7 +49,7 @@ if __name__ == '__main__':
     model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr, clipnorm=1.0),
-        loss=[sortino_ratio_loss, portfolio_return_loss, volatility_loss],
+        loss=[sharpe_ratio_loss],
         metrics=[]
     )
 
