@@ -32,11 +32,15 @@ if __name__ == '__main__':
 
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((window_size, 4), name="indicators_input")
-    p = tf.keras.layers.LSTM(64, activation='elu')(input_prices)
+    p = tf.keras.layers.Conv1D(64, 3, padding='valid', activation='elu')(input_prices)
+    p = tf.keras.layers.Conv1D(64, 3, padding='valid', activation='elu')(p)
     p = tf.keras.layers.BatchNormalization()(p)
+    p = tf.keras.layers.GlobalMaxPooling1D()(p)
 
-    i = tf.keras.layers.LSTM(64, activation='elu')(input_indicators)
+    i = tf.keras.layers.Conv1D(64, 3, padding='valid', activation='elu')(input_indicators)
+    i = tf.keras.layers.Conv1D(64, 3, padding='valid', activation='elu')(i)
     i = tf.keras.layers.BatchNormalization()(i)
+    i = tf.keras.layers.GlobalMaxPooling1D()(i)
 
     x = tf.keras.layers.Concatenate()([p, i])
     x = tf.keras.layers.Dense(64, activation='elu')(x)
