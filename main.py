@@ -28,7 +28,7 @@ if __name__ == '__main__':
     window_size = args.window_size
 
     portfolio = Portfolio(tickers=tickers, start_date=args.train_start_date, end_date=args.train_end_date)
-    dataset = portfolio.create_dataset(step=1, size=window_size).shuffle(50000).batch(32).cache().prefetch(tf.data.experimental.AUTOTUNE)
+    dataset = portfolio.create_dataset(step=1, size=window_size).shuffle(50000).batch(args.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
 
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((window_size, 4), name="indicators_input")
@@ -46,14 +46,13 @@ if __name__ == '__main__':
     x = tf.keras.layers.Dense(64, activation='elu')(x)
 
     allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
-    # volatility = tf.keras.layers.Dense(1, activation='linear', name='volatility')(x)
 
-    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations])
+    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, allocations, allocations])
 
     model.summary()
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr, clipnorm=1.0),
-        loss=[sharpe_ratio_loss],
+        optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr),
+        loss=[sharpe_ratio_loss, volatility_loss, portfolio_return_loss],
         metrics=[]
     )
 

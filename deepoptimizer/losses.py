@@ -3,12 +3,7 @@ import numpy as np
 
 @tf.function
 def __daily_returns(prices):
-    return tf.subtract(
-        tf.math.divide_no_nan(
-            prices[:, 1:],
-            prices[:, :-1]),
-        1.0
-    )
+    return prices[:, :-1] / prices[:, 1:] - 1.0
 
 @tf.function
 def __downside_risk(returns, risk_free=0):
@@ -105,8 +100,6 @@ def sharpe_ratio_loss(Y_actual, Y_pred):
 
     end_val = tf.squeeze(portfolio_values[:, -1:])
     start_val = tf.squeeze(portfolio_values[:, 0:1])
-
-    ret = (end_val - start_val) / start_val
 
     port_rets = __daily_returns(portfolio_values)
 
