@@ -91,21 +91,15 @@ def sharpe_ratio_loss(Y_actual, Y_pred):
     start_value = tf.constant(1000.0)
 
     risk_free_rate = tf.constant(0.0005)
-    daily_rfr = tf.subtract(tf.pow(tf.add(1.0, risk_free_rate), tf.divide(1.0, 252.0)), 1.0)
-    frequency = tf.sqrt(252.0)
 
     alloced = tf.multiply(Y_actual, tf.expand_dims(Y_pred, axis=1))
     pos_vals = tf.multiply(start_value, alloced)
-    portfolio_values = tf.reduce_sum(pos_vals, axis=2)
-
-    end_val = tf.squeeze(portfolio_values[:, -1:])
-    start_val = tf.squeeze(portfolio_values[:, 0:1])
+    portfolio_values = tf.reduce_sum(pos_vals, axis=-1)
 
     port_rets = __daily_returns(portfolio_values)
 
-    mean_return = tf.math.reduce_mean(port_rets, axis=-1, keepdims=False)
     std_return = tf.math.reduce_std(port_rets, axis=-1, keepdims=False)
-    # print(std_return)
+    mean_return = tf.math.reduce_mean(port_rets, axis=-1, keepdims=False)
 
     sharpe = (mean_return - risk_free_rate) / std_return
 
