@@ -27,16 +27,13 @@ def __downside_risk(returns, risk_free=0):
 def portfolio_return_loss(Y_actual, Y_pred):
     start_value = tf.constant(1000.0)
 
-    alloced = tf.multiply(Y_actual, tf.expand_dims(Y_pred, axis=1))
-    pos_vals = tf.multiply(start_value, alloced)
-    portfolio_values = tf.reduce_sum(pos_vals, axis=-1)
+    # end_val = tf.squeeze(portfolio_values[:, -1:])
+    # start_val = tf.squeeze(portfolio_values[:, 0:1])
+    # ret = (end_val - start_val) / start_val
+    returns = get_portfolio_returns(Y_actual, Y_pred, start_value)
+    avg_return = tf.reduce_mean(returns, axis=-1)
 
-    end_val = tf.squeeze(portfolio_values[:, -1:])
-    start_val = tf.squeeze(portfolio_values[:, 0:1])
-
-    ret = (end_val - start_val) / start_val
-
-    return tf.math.negative(ret)
+    return tf.math.negative(avg_return)
 
 
 @tf.function
