@@ -37,8 +37,8 @@ def normalize_to_one(df):
     return df / df.iloc[0]
 
 
-def min_max_normalize(df):
-    return (df - df.min()) / (df.max() - df.min())
+def min_max_normalize(df, epsilon=0e-10):
+    return (df - df.min()) / (df.max() - df.min() + epsilon)
 
 
 def std_normalize(df):

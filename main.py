@@ -11,8 +11,8 @@ def sharpe(p, w):
 
 def deep_conv(input, number_layers=10, channels=8):
     x = input
-    for i in range(number_layers):
-        x = tf.keras.layers.Conv1D(channels, 3, padding='same', activation='elu')(x)
+    for i in range(1, number_layers):
+        x = tf.keras.layers.Conv1D(i * 2, 3, padding='same', activation='elu')(x)
     x = tf.keras.layers.Flatten()(x)
     return x
 
@@ -45,13 +45,16 @@ if __name__ == '__main__':
     dataset = portfolio.create_dataset(step=1, size=window_size, skip_y=skip_y).shuffle(50000).batch(args.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
 
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
-    input_indicators = tf.keras.layers.Input((window_size, 4), name="indicators_input")
-    p = deep_conv(input_prices, channels=number_of_assets)
+    input_indicators = tf.keras.layers.Input((window_size, 7), name="indicators_input")
+    p = tf.keras.layers.LSTM(64, return_sequences=True)(input_prices)
+    # p = tf.keras.layers.Flatten()(p)
 
-    i = deep_conv(input_indicators, channels=number_of_assets)
+    i = tf.keras.layers.LSTM(64, return_sequences=True)(input_indicators)
+    # i = tf.keras.layers.Flatten()(i)
 
     x = tf.keras.layers.Concatenate()([p, i])
-    x = tf.keras.layers.Dense(64, activation='elu')(x)
+    x = tf.keras.layers.Conv1D(64, 3, padding='same', activation='elu')(x)
+    x = tf.keras.layers.Flatten()(x)
 
     allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
     volatility = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="volatility")(x)
