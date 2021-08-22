@@ -67,13 +67,12 @@ if __name__ == '__main__':
         optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr),
         loss=[sharpe_ratio_loss, volatility_loss, portfolio_return_loss],
         metrics=[],
-        callbacks=[tf.keras.callbacks.EarlyStopping(monitor="loss")]
     )
 
     print("----Training Start----")
     print("Tickers:\n{}".format(args.tickers))
     print("--------")
-    model.fit(dataset, epochs=args.epochs, verbose=1)
+    model.fit(dataset, epochs=args.epochs, verbose=1, callbacks=[tf.keras.callbacks.EarlyStopping(monitor="loss")])
 
     print("----Optimization Start----")
     pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True, step=window_size, size=window_size).batch(
