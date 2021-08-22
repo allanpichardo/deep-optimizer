@@ -66,7 +66,8 @@ if __name__ == '__main__':
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr),
         loss=[sharpe_ratio_loss, volatility_loss, portfolio_return_loss],
-        metrics=[]
+        metrics=[],
+        callbacks=[tf.keras.callbacks.EarlyStopping(monitor="loss")]
     )
 
     print("----Training Start----")
