@@ -19,6 +19,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_end_date', default='2020-01-01')
     parser.add_argument('--tickers', nargs="+", default=["FIPDX", "FOCPX", "FBGRX"])
     parser.add_argument('--window_size', type=int, default=252)
+    parser.add_argument('--mode', type=str, default='predict')
 
     args = parser.parse_args()
 
@@ -27,9 +28,15 @@ if __name__ == '__main__':
     tickers = args.tickers.copy()
     number_of_assets = len(tickers)
     window_size = args.window_size
+    skip_y = args.mode == 'optimize'
+
+    if skip_y:
+        print('Running in optimization mode')
+    else:
+        print('Running in forecast mode')
 
     portfolio = Portfolio(tickers=tickers, start_date=args.train_start_date, end_date=args.train_end_date)
-    dataset = portfolio.create_dataset(step=1, size=window_size).shuffle(50000).batch(args.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
+    dataset = portfolio.create_dataset(step=1, size=window_size, skip_y=skip_y).shuffle(50000).batch(args.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
 
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((window_size, 4), name="indicators_input")
