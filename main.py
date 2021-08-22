@@ -72,7 +72,7 @@ if __name__ == '__main__':
     print("----Training Start----")
     print("Tickers:\n{}".format(args.tickers))
     print("--------")
-    model.fit(dataset, epochs=args.epochs, verbose=1, callbacks=[tf.keras.callbacks.EarlyStopping(monitor="loss")])
+    model.fit(dataset, epochs=args.epochs, verbose=1, callbacks=[tf.keras.callbacks.EarlyStopping(monitor="loss", patience=3)])
 
     print("----Optimization Start----")
     pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True, step=window_size, size=window_size).batch(
