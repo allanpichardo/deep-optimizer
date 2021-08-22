@@ -57,10 +57,10 @@ if __name__ == '__main__':
     x = tf.keras.layers.GlobalAveragePooling1D()(x)
 
     allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
-    volatility = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="volatility")(x)
-    returns = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="returns")(x)
+    # volatility = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="volatility")(x)
+    # returns = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="returns")(x)
 
-    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, volatility, returns])
+    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations])
 
     model.summary()
     model.compile(
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     print("----Training Start----")
     print("Tickers:\n{}".format(args.tickers))
     print("--------")
-    model.fit(dataset, epochs=args.epochs, verbose=1, callbacks=[tf.keras.callbacks.EarlyStopping(monitor="loss", patience=3)])
+    model.fit(dataset, epochs=args.epochs, verbose=1, callbacks=[tf.keras.callbacks.EarlyStopping(monitor="loss", patience=3, verbose=1)])
 
     print("----Optimization Start----")
     pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True, step=window_size, size=window_size).batch(
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     port_pred = model.predict(pred.take(1), verbose=1)
     print("Allocations:\n{}".format(args.tickers))
     print(np.around(port_pred[0], decimals=2))
-    print("Volatility:")
-    print(np.around(port_pred[1], decimals=2))
-    print("Returns:")
-    print(np.around(port_pred[2], decimals=2))
+    # print("Volatility:")
+    # print(np.around(port_pred[1], decimals=2))
+    # print("Returns:")
+    # print(np.around(port_pred[2], decimals=2))
