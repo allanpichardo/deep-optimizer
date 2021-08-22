@@ -9,6 +9,12 @@ import argparse
 def sharpe(p, w):
     return -sharpe_ratio_loss(p, w)
 
+def deep_conv(input, number_layers=10, channels=8):
+    x = input
+    for i in range(number_layers):
+        x = tf.keras.layers.Conv1D(channels, 3, padding='same', activation='elu')(x)
+    x = tf.keras.layers.Flatten()(x)
+    return x
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Optimize Portfolio.')
@@ -40,16 +46,12 @@ if __name__ == '__main__':
 
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((window_size, 4), name="indicators_input")
-    p = tf.keras.layers.Conv1D(128, 3, padding='same', activation='elu')(input_prices)
-    p = tf.keras.layers.LSTM(512)(p)
-    p = tf.keras.layers.BatchNormalization()(p)
+    p = deep_conv(input_prices, channels=number_of_assets)
 
-    i = tf.keras.layers.Conv1D(128, 3, padding='same', activation='elu')(input_indicators)
-    i = tf.keras.layers.LSTM(512)(i)
-    i = tf.keras.layers.BatchNormalization()(i)
+    i = deep_conv(input_indicators, channels=number_of_assets)
 
     x = tf.keras.layers.Concatenate()([p, i])
-    # x = tf.keras.layers.Dense(16, activation='elu')(x)
+    x = tf.keras.layers.Dense(64, activation='elu')(x)
 
     allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
     volatility = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="volatility")(x)
@@ -60,7 +62,7 @@ if __name__ == '__main__':
     model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr),
-        loss=[sortino_ratio_loss, volatility_loss, portfolio_return_loss],
+        loss=[sharpe_ratio_loss, volatility_loss, portfolio_return_loss],
         metrics=[]
     )
 
