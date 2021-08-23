@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     x = tf.keras.layers.Concatenate()([p, i])
     x = tf.keras.layers.Conv1D(32, 3, padding='same', activation='elu')(x)
-    x = tf.keras.layers.GlobalAveragePooling1D()(x)
+    x = tf.keras.layers.Flatten(x)
 
     volatility = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="volatility")(x)
     returns = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="returns")(x)
