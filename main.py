@@ -44,6 +44,10 @@ if __name__ == '__main__':
     portfolio = Portfolio(tickers=tickers, start_date=args.train_start_date, end_date=args.train_end_date)
     dataset = portfolio.create_dataset(step=1, size=window_size, skip_y=skip_y).shuffle(50000).batch(args.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
 
+    pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True,
+                                                                                                     step=window_size,
+                                                                                                     size=window_size).batch(1)
+
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((window_size, 7), name="indicators_input")
     p = tf.keras.layers.LSTM(16, return_sequences=True)(input_prices)
@@ -75,11 +79,14 @@ if __name__ == '__main__':
     print("----Training Start----")
     print("Tickers:\n{}".format(args.tickers))
     print("--------")
-    model.fit(dataset, epochs=args.epochs, verbose=1, callbacks=[tf.keras.callbacks.EarlyStopping(monitor="loss", patience=3, verbose=1)])
+    model.fit(dataset,
+              epochs=args.epochs,
+              verbose=1,
+              validation_data=pred,
+              callbacks=[tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, verbose=1)])
 
     print("----Optimization Start----")
-    pred = Portfolio(tickers=tickers, start_date='2020-01-01', end_date='2021-01-01').create_dataset(skip_y=True, step=window_size, size=window_size).batch(
-        1)
+
     port_pred = model.predict(pred.take(1), verbose=1)
     print("Allocations:\n{}".format(args.tickers))
     print(np.around(port_pred[0], decimals=2))
