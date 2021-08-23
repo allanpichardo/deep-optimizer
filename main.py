@@ -46,21 +46,23 @@ if __name__ == '__main__':
 
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((window_size, 7), name="indicators_input")
-    p = tf.keras.layers.LSTM(256, return_sequences=True)(input_prices)
+    p = tf.keras.layers.LSTM(16, return_sequences=True)(input_prices)
     # p = tf.keras.layers.Flatten()(p)
 
-    i = tf.keras.layers.LSTM(256, return_sequences=True)(input_indicators)
+    i = tf.keras.layers.LSTM(16, return_sequences=True)(input_indicators)
     # i = tf.keras.layers.Flatten()(i)
 
     x = tf.keras.layers.Concatenate()([p, i])
-    x = tf.keras.layers.Conv1D(256, 3, padding='same', activation='elu')(x)
+    x = tf.keras.layers.Conv1D(32, 3, padding='same', activation='elu')(x)
     x = tf.keras.layers.GlobalAveragePooling1D()(x)
 
-    allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(x)
-    # volatility = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="volatility")(x)
-    # returns = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="returns")(x)
+    volatility = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="volatility")(x)
+    returns = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="returns")(x)
 
-    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations])
+    combined = tf.keras.layers.Concatenate()([volatility, returns])
+    allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(combined)
+
+    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, volatility, returns])
 
     model.summary()
     model.compile(
@@ -80,7 +82,7 @@ if __name__ == '__main__':
     port_pred = model.predict(pred.take(1), verbose=1)
     print("Allocations:\n{}".format(args.tickers))
     print(np.around(port_pred[0], decimals=2))
-    # print("Volatility:")
-    # print(np.around(port_pred[1], decimals=2))
-    # print("Returns:")
-    # print(np.around(port_pred[2], decimals=2))
+    print("Volatility:")
+    print(np.around(port_pred[1], decimals=2))
+    print("Returns:")
+    print(np.around(port_pred[2], decimals=2))
