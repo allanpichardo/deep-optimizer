@@ -50,18 +50,18 @@ if __name__ == '__main__':
 
     input_prices = tf.keras.layers.Input((window_size, number_of_assets), name="price_input")
     input_indicators = tf.keras.layers.Input((window_size, 7), name="indicators_input")
-    p = tf.keras.layers.Conv1D(128, 3, activation='elu')(input_prices)
+    p = tf.keras.layers.Conv1D(8, 3, activation='elu')(input_prices)
     # p = tf.keras.layers.LSTM(32, return_sequences=True)(p)
     # p = tf.keras.layers.Flatten()(p)
 
-    i = tf.keras.layers.Conv1D(128, 3, activation='elu')(input_indicators)
+    i = tf.keras.layers.Conv1D(8, 3, activation='elu')(input_indicators)
     # i = tf.keras.layers.LSTM(32, return_sequences=True)(i)
     # i = tf.keras.layers.Flatten()(i)
 
     x = tf.keras.layers.Concatenate()([p, i])
     # x = tf.keras.layers.Conv1D(32, 3, activation='elu')(x)
     x = tf.keras.layers.Flatten()(x)
-    x = tf.keras.layers.Dense(1024, activation='elu')(x)
+    x = tf.keras.layers.Dense(16, activation='elu')(x)
     volatility = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="volatility")(x)
     # returns = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="returns")(x)
 
