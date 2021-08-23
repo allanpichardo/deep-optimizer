@@ -63,17 +63,17 @@ if __name__ == '__main__':
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dense(16, activation='elu')(x)
     volatility = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="volatility")(x)
-    # returns = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="returns")(x)
+    returns = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="returns")(x)
 
-    # combined = tf.keras.layers.Concatenate()([volatility, returns])
-    # allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(combined)
+    combined = tf.keras.layers.Concatenate()([volatility, returns, x])
+    allocations = tf.keras.layers.Dense(number_of_assets, activation='softmax', name="allocations")(combined)
 
-    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[volatility])
+    model = tf.keras.Model(inputs=[input_prices, input_indicators], outputs=[allocations, volatility, returns])
 
     model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr),
-        loss=[sortino_ratio_loss],
+        loss=[sortino_ratio_loss, volatility, returns],
         metrics=[],
         # loss_weights=[-1.0, 1.5, -0.5],
     )
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     port_pred = model.predict(pred.take(1), verbose=1)
     print("Allocations:\n{}".format(args.tickers))
     print(np.around(port_pred[0], decimals=2))
-    # print("Volatility:")
-    # print(np.around(port_pred[1], decimals=2))
-    # print("Returns:")
-    # print(np.around(port_pred[2], decimals=2))
+    print("Volatility:")
+    print(np.around(port_pred[1], decimals=2))
+    print("Returns:")
+    print(np.around(port_pred[2], decimals=2))
