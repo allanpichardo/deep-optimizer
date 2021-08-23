@@ -71,7 +71,7 @@ def sortino_ratio_loss(Y_actual, Y_pred):
 
     sharpe = tf.sqrt(252.0) * sharpe
 
-    return tf.reduce_mean(sharpe)
+    return tf.reduce_mean(tf.negative(sharpe))
 
 
 @tf.function

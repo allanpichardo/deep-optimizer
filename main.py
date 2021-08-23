@@ -72,7 +72,7 @@ if __name__ == '__main__':
     model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr),
-        loss=[volatility_loss],
+        loss=[sortino_ratio_loss],
         metrics=[],
         # loss_weights=[-1.0, 1.5, -0.5],
     )
