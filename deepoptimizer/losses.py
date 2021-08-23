@@ -33,7 +33,7 @@ def portfolio_return_loss(Y_actual, Y_pred):
     returns = get_portfolio_returns(Y_actual, Y_pred, start_value)
     avg_return = tf.reduce_mean(returns, axis=-1)
 
-    return tf.reduce_mean(avg_return)
+    return tf.reduce_mean(1.0 - avg_return)
 
 
 @tf.function
@@ -94,7 +94,7 @@ def sharpe_ratio_loss(Y_actual, Y_pred):
 
     # sharpe = tf.sqrt(252.0) * sharpe
 
-    return tf.reduce_mean(sharpe)
+    return tf.reduce_mean(3.0 - sharpe)
 
 
 if __name__ == '__main__':
