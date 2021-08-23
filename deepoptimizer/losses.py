@@ -33,7 +33,7 @@ def portfolio_return_loss(Y_actual, Y_pred):
     returns = get_portfolio_returns(Y_actual, Y_pred, start_value)
     avg_return = tf.reduce_mean(returns, axis=-1)
 
-    return tf.math.negative(tf.reduce_mean(avg_return))
+    return tf.reduce_mean(avg_return)
 
 
 @tf.function
@@ -48,7 +48,7 @@ def volatility_loss(Y_actual, Y_pred):
 
     std_return = tf.math.reduce_std(port_rets, axis=-1, keepdims=False)
 
-    return tf.math.abs(tf.reduce_mean(std_return))
+    return tf.reduce_mean(std_return)
 
 
 @tf.function
@@ -71,7 +71,7 @@ def sortino_ratio_loss(Y_actual, Y_pred):
 
     sharpe = tf.sqrt(252.0) * sharpe
 
-    return tf.math.negative(tf.reduce_mean(sharpe))
+    return tf.reduce_mean(sharpe)
 
 
 @tf.function
@@ -94,7 +94,7 @@ def sharpe_ratio_loss(Y_actual, Y_pred):
 
     # sharpe = tf.sqrt(252.0) * sharpe
 
-    return tf.math.negative(tf.reduce_mean(sharpe))
+    return tf.reduce_mean(sharpe)
 
 
 if __name__ == '__main__':
